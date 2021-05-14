@@ -60,10 +60,8 @@ fn decode_32bit<T: std::io::Read>(data: &mut T) -> Result<[u8; 4]> {
     decode_nbit(data)
 }
 fn decode_module<T: std::io::Read>(data: &mut T) -> Result<ast::Module> {
-    let magic_number = decode_32bit(data)?;
-    let magic_number = u32::from_le_bytes(magic_number);
-    let version = decode_32bit(data)?;
-    let version = u32::from_le_bytes(version);
+    let magic_number = u32::from_le_bytes(decode_32bit(data)?);
+    let version = u32::from_le_bytes(decode_32bit(data)?);
     Ok(ast::Module::new(magic_number, version, None))
 }
 #[cfg(test)]
