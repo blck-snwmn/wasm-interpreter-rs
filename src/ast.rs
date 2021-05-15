@@ -12,6 +12,8 @@ pub(crate) enum ParseError {
     Convert(#[from] std::num::TryFromIntError),
     #[error("read failed: {0}")]
     Read(#[from] std::io::Error),
+    #[error("id={0} is not found in the section defition.")]
+    NotDifinedID(u8),
 }
 
 type Result<T> = std::result::Result<T, ParseError>;
@@ -57,7 +59,7 @@ impl Module {
 pub struct Section {
     pub id: varuint7,
     pub payload_len: varuint32,
-    pub payload_data: Vec<u8>,
+    pub payload_data: SectionData,
 }
 
 impl Section {
@@ -66,7 +68,7 @@ impl Section {
 
         let payload_len = u32::try_from(decode::decode_varint(data)?)?;
 
-        let payload_data = decode::decode_len(data, payload_len as usize)?;
+        let payload_data = SectionData::parse(data, id, payload_len as usize)?;
 
         Ok(Self {
             id,
@@ -89,17 +91,38 @@ impl Section {
 }
 
 pub enum SectionData {
-    Type,
+    Custom(CustomSection),
+    Type(TypeSection),
     Import,
-    Function,
+    Function(FunctionSection),
+    Table,
     Memory,
     Global,
     Export,
     Start,
     Element,
-    Code,
+    Code(CodeSection),
     Data,
+    DataCount,
 }
+
+impl SectionData {
+    fn parse(data: &mut Cursor<&[u8]>, id: u8, payload_len: usize) -> Result<Self> {
+        let payload_data = decode::decode_len(data, payload_len)?;
+        match id {
+            0 => Ok(Self::Custom(CustomSection {})), // custom section は何もしない
+            1 => Ok(Self::Type(TypeSection {})),
+            3 => Ok(Self::Function(FunctionSection {})),
+            10 => Ok(Self::Code(CodeSection {})),
+            _ => Err(ParseError::NotDifinedID(id)),
+        }
+    }
+}
+pub struct CustomSection {}
+
+pub struct TypeSection {}
+pub struct FunctionSection {}
+pub struct CodeSection {}
 
 #[cfg(test)]
 mod test {
