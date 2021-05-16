@@ -297,26 +297,35 @@ mod test {
             assert_eq!(result.version, 1);
             assert!(!result.sections.is_empty());
 
-            for s in &result.sections {
-                match &s.payload_data {
-                    SectionData::Custom(_) => {}
-                    SectionData::Type(ty) => {
-                        assert!(!&ty.funcs.is_empty());
-                        for f in &ty.funcs {
-                            let ps = &f.params_types;
-                            assert_eq!(ps.valu_types.len(), 0);
+            let elm = &result.sections.get(0).unwrap().payload_data;
+            assert!(matches!(elm, SectionData::Type(_)));
 
-                            let rs = &f.return_types;
-                            assert_eq!(rs.valu_types.len(), 1);
-                            let r = rs.valu_types.get(0).unwrap();
-                            assert!(matches!(r, ValueType::Number(_)));
-                        }
-                    }
-                    SectionData::Function(_) => {}
-                    SectionData::Code(_) => {}
-                    _ => {}
+            if let SectionData::Type(ty) = elm {
+                assert_eq!(ty.funcs.len(), 1);
+                for f in &ty.funcs {
+                    let ps = &f.params_types;
+                    assert_eq!(ps.valu_types.len(), 0);
+
+                    let rs = &f.return_types;
+                    assert_eq!(rs.valu_types.len(), 1);
+                    let r = rs.valu_types.get(0).unwrap();
+                    assert!(matches!(r, ValueType::Number(_)));
                 }
             }
+
+            let elm = &result.sections.get(1).unwrap().payload_data;
+            assert!(matches!(elm, SectionData::Function(_)));
+
+            if let SectionData::Function(fs) = elm {
+                assert_eq!(fs.indexies.len(), 1);
+                assert_eq!(*fs.indexies.get(0).unwrap(), 0x00);
+            }
+
+            let elm = &result.sections.get(2).unwrap().payload_data;
+            assert!(matches!(elm, SectionData::Code(_)));
+
+            let elm = &result.sections.get(3).unwrap().payload_data;
+            assert!(matches!(elm, SectionData::Custom(_)));
         }
     }
 }
