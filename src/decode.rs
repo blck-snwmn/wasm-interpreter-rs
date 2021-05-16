@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-use crate::ast::{self, Section};
 #[derive(Error, Debug)]
 pub(crate) enum DecodeError {
     #[error("unexpected format. end come after MSB is 0")]
