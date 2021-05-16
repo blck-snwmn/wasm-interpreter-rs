@@ -118,7 +118,6 @@ pub struct Code {
 
 impl Code {
     fn parse(data: &mut &[u8]) -> Result<Self> {
-        // 04 が 長さ
         let locals = parse_vec(data, |data| wasm_type::ValueType::parse(data))?;
         let expression = instruction::Expression::parse(data)?;
         Ok(Self { locals, expression })

@@ -188,6 +188,22 @@ mod test {
             let elm = &result.sections.get(3).unwrap().payload_data;
             assert!(matches!(elm, SectionData::Code(_)));
 
+            if let SectionData::Code(cs) = elm {
+                // assert_eq!(cs.codes.len(), 1);
+                // let c = cs.codes.get(0).unwrap();
+                // assert_eq!(c.locals.len(), 2);
+
+                // let exp = &c.expression;
+                // assert_eq!(exp.instrs.len(), 1);
+                // // let instr = exp.instrs.get(0).unwrap();
+                // // assert!(matches!(
+                // //     instr,
+                // //     Instruction::Numeric(NumericInstruction::Const(
+                // //         ConstNumericInstruction::ConstI32(42)
+                // //     ))
+                // // ));
+            }
+
             let elm = &result.sections.get(4).unwrap().payload_data;
             assert!(matches!(elm, SectionData::Custom(_)));
         }
