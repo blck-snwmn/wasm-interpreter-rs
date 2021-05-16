@@ -13,7 +13,7 @@ mod test {
 
     use super::*;
     use crate::ast::{
-        instruction::{ConstNumericInstruction, Instruction, NumericInstruction},
+        instruction::*,
         section::SectionData,
         wasm_type::{NumberType, ValueType},
     };
@@ -138,7 +138,8 @@ mod test {
                 0x01, 0x03, 0x61, 0x64, 0x64, 0x00, 0x00, // a
                 // code section
                 0x0a, 0x09, // id, length
-                0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b, // a
+                0x01, // number of element
+                0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b, // a
                 // custom section (ignore)
                 0x00, 0x1c, // id, length
                 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x01, 0x06, 0x01, 0x00, 0x03, 0x61, 0x64, 0x64, 0x02,
@@ -189,19 +190,27 @@ mod test {
             assert!(matches!(elm, SectionData::Code(_)));
 
             if let SectionData::Code(cs) = elm {
-                // assert_eq!(cs.codes.len(), 1);
-                // let c = cs.codes.get(0).unwrap();
-                // assert_eq!(c.locals.len(), 2);
+                assert_eq!(cs.codes.len(), 1);
+                let c = cs.codes.get(0).unwrap();
+                assert_eq!(c.locals.len(), 0);
 
-                // let exp = &c.expression;
-                // assert_eq!(exp.instrs.len(), 1);
-                // // let instr = exp.instrs.get(0).unwrap();
-                // // assert!(matches!(
-                // //     instr,
-                // //     Instruction::Numeric(NumericInstruction::Const(
-                // //         ConstNumericInstruction::ConstI32(42)
-                // //     ))
-                // // ));
+                let exp = &c.expression;
+                assert_eq!(exp.instrs.len(), 3);
+                let x = exp.instrs.get(0);
+                assert!(matches!(
+                    exp.instrs.get(0),
+                    Some(Instruction::Variable(VariableInstruction::LocalGet(0x00)))
+                ));
+                assert!(matches!(
+                    exp.instrs.get(1),
+                    Some(Instruction::Variable(VariableInstruction::LocalGet(0x01)))
+                ));
+                assert!(matches!(
+                    exp.instrs.get(2),
+                    Some(Instruction::Numeric(NumericInstruction::Plain(
+                        PlainNumericInstruction::AddI32
+                    )))
+                ));
             }
 
             let elm = &result.sections.get(4).unwrap().payload_data;

@@ -35,7 +35,7 @@ impl Instruction {
     fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
         match by {
             0x00..=0x11 => Ok(Self::Control(ControlInstruction::Nop)),
-            0x20..=0x24 => Ok(Self::Variable(VariableInstruction::LocalGet)),
+            0x20..=0x24 => Ok(Self::Variable(VariableInstruction::parse(data, by)?)),
             0x41..=0xC4 => Ok(Self::Numeric(NumericInstruction::parse(data, by)?)),
             _ => Err(ParseError::UnexpectedByteValue {
                 title: "Instruction".to_string(),
@@ -79,13 +79,28 @@ impl ControlInstruction {
 }
 
 pub enum VariableInstruction {
-    LocalGet,
-    LocalSet,
-    LocalTee,
-    GlobalGet,
-    GlobalSet,
+    LocalGet(u32),
+    LocalSet(u32),
+    LocalTee(u32),
+    GlobalGet(u32),
+    GlobalSet(u32),
 }
-impl VariableInstruction {}
+impl VariableInstruction {
+    fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
+        let index = u32::try_from(decode::decode_varint(data)?)?;
+        match by {
+            0x20 => Ok(Self::LocalGet(index)),
+            0x21 => Ok(Self::LocalSet(index)),
+            0x22 => Ok(Self::LocalTee(index)),
+            0x23 => Ok(Self::GlobalGet(index)),
+            0x24 => Ok(Self::GlobalSet(index)),
+            _ => Err(ParseError::UnexpectedByteValue {
+                title: "VariableInstruction".to_string(),
+                got: by,
+            }),
+        }
+    }
+}
 
 pub enum NumericInstruction {
     Const(ConstNumericInstruction),
@@ -97,7 +112,7 @@ impl NumericInstruction {
     fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
         match by {
             0x41..=0x44 => Ok(Self::Const(ConstNumericInstruction::parse(data, by)?)),
-            0x45..=0xC4 => Ok(Self::Plain(PlainNumericInstruction::AddI32)),
+            0x45..=0xC4 => Ok(Self::Plain(PlainNumericInstruction::parse(data, by)?)),
             0xFC => Ok(Self::SaturatingTruncation),
             _ => Err(ParseError::UnexpectedByteValue {
                 title: "NumericInstruction".to_string(),
@@ -148,4 +163,16 @@ impl ConstNumericInstruction {
 
 pub enum PlainNumericInstruction {
     AddI32,
+}
+
+impl PlainNumericInstruction {
+    fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
+        match by {
+            0x6a => Ok(Self::AddI32),
+            _ => Err(ParseError::UnexpectedByteValue {
+                title: "PlainNumericInstruction".to_string(),
+                got: by,
+            }),
+        }
+    }
 }
