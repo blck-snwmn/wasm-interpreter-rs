@@ -116,7 +116,9 @@ impl SectionData {
             1 => Ok(Self::Type(TypeSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
-            3 => Ok(Self::Function(FunctionSection {})),
+            3 => Ok(Self::Function(FunctionSection::parse(
+                &mut payload_data.as_slice(),
+            )?)),
             10 => Ok(Self::Code(CodeSection {})),
             _ => Err(ParseError::UnexpectedSectionId(id)),
         }
@@ -137,7 +139,18 @@ impl TypeSection {
         Ok(Self { funcs: v })
     }
 }
-pub struct FunctionSection {}
+pub struct FunctionSection {
+    indexies: Vec<u32>,
+}
+
+impl FunctionSection {
+    fn parse(data: &mut &[u8]) -> Result<Self> {
+        let v = parse_vec(data, |data| {
+            Ok(u32::try_from(decode::decode_varint(data)?)?)
+        })?;
+        Ok(Self { indexies: v })
+    }
+}
 pub struct CodeSection {}
 
 pub enum Type {
@@ -231,6 +244,19 @@ impl ReferenceType {
             _ => None,
         }
     }
+}
+
+fn parse_vec<F, T>(data: &mut &[u8], func: F) -> Result<Vec<T>>
+where
+    F: Fn(&mut &[u8]) -> Result<T>,
+    T: Sized,
+{
+    let num = u32::try_from(decode::decode_varint(data)?)?;
+    let mut v = Vec::new();
+    for _ in 0..num {
+        v.push(func(data)?);
+    }
+    Ok(v)
 }
 
 #[cfg(test)]
