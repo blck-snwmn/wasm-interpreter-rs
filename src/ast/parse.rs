@@ -14,6 +14,8 @@ pub(crate) enum ParseError {
     UnexpectedSectionId(u8),
     #[error("unexpected value in {title}. got=0x{got:0>2x}")]
     UnexpectedByteValue { title: String, got: u8 },
+    #[error("unexpected value. {0}")]
+    UnexpectedValue(String),
 }
 
 pub(crate) type Result<T> = std::result::Result<T, ParseError>;

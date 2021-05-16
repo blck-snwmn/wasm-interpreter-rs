@@ -1,6 +1,7 @@
 use super::{
+    instruction,
     parse::{parse_vec, ParseError, Result},
-    wasm_type::FunctionType,
+    wasm_type::{self, FunctionType},
 };
 use crate::decode;
 use std::convert::TryFrom;
@@ -66,7 +67,9 @@ impl SectionData {
             3 => Ok(Self::Function(FunctionSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
-            10 => Ok(Self::Code(CodeSection {})),
+            10 => Ok(Self::Code(CodeSection::parse(
+                &mut payload_data.as_slice(),
+            )?)),
             _ => Err(ParseError::UnexpectedSectionId(id)),
         }
     }
@@ -78,11 +81,7 @@ pub struct TypeSection {
 }
 impl TypeSection {
     fn parse(data: &mut &[u8]) -> Result<Self> {
-        let num = u32::try_from(decode::decode_varint(data)?)?;
-        let mut v = Vec::new();
-        for _ in 0..num {
-            v.push(FunctionType::parse(data)?);
-        }
+        let v = parse_vec(data, |data| FunctionType::parse(data))?;
         Ok(Self { funcs: v })
     }
 }
@@ -98,4 +97,29 @@ impl FunctionSection {
         Ok(Self { indexies: v })
     }
 }
-pub struct CodeSection {}
+pub struct CodeSection {
+    codes: Vec<Code>,
+}
+impl CodeSection {
+    fn parse(data: &mut &[u8]) -> Result<Self> {
+        let v = parse_vec(data, |data| {
+            let len = decode::decode_varint(data)?;
+            let data = decode::decode_len(data, len as usize)?;
+            Code::parse(&mut data.as_slice())
+        })?;
+        Ok(Self { codes: v })
+    }
+}
+pub struct Code {
+    locals: Vec<wasm_type::ValueType>,
+    expression: instruction::Expression,
+}
+
+impl Code {
+    fn parse(data: &mut &[u8]) -> Result<Self> {
+        // 04 が 長さ
+        let locals = parse_vec(data, |data| wasm_type::ValueType::parse(data))?;
+        let expression = instruction::Expression::parse(data)?;
+        Ok(Self { locals, expression })
+    }
+}

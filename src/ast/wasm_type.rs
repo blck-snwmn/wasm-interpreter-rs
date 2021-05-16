@@ -45,7 +45,7 @@ pub enum ValueType {
     Reference(ReferenceType),
 }
 impl ValueType {
-    fn parse(data: &mut &[u8]) -> Result<Self> {
+    pub(super) fn parse(data: &mut &[u8]) -> Result<Self> {
         let by = u8::try_from(decode::decode_varint(data)?)?;
         if let Some(num_type) = NumberType::new(by) {
             Ok(Self::Number(num_type))

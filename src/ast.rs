@@ -5,6 +5,7 @@ use std::{
 };
 use thiserror::Error;
 
+mod instruction;
 mod module;
 mod parse;
 mod section;
@@ -34,6 +35,7 @@ mod test {
     #[test]
     fn test_parse_module() {
         {
+            // (module)
             let min_input: &[u8] = &[0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00];
             let min_input = &mut Cursor::new(min_input);
             let result = module::Module::parse(min_input);
@@ -50,13 +52,26 @@ mod test {
             assert_eq!(current, end);
         }
         {
+            // (module
+            //   (func $add  (result i32)
+            //   i32.const 42
+            //   )
+            // )
             let input: &[u8] = &[
                 0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, // magic number, version
                 0x01, 0x05, 0x01, 0x60, 0x00, 0x01, 0x7f, // type section
                 0x03, 0x02, 0x01, 0x00, // function section
-                0x0a, 0x06, 0x01, 0x04, 0x00, 0x41, 0x2a, 0x0b, // code section
+                // code section
+                0x0a, // id
+                0x06, // length
+                0x01, // number of element
+                0x04, // length of code
+                0x00, // locals
+                0x41, 0x2a, // expr
+                0x0b, // end
+                // custom section
                 0x00, 0x12, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x01, 0x06, 0x01, 0x00, 0x03, 0x61, 0x64,
-                0x64, 0x02, 0x03, 0x01, 0x00, 0x00, // custom section
+                0x64, 0x02, 0x03, 0x01, 0x00, 0x00,
             ];
             let input = &mut Cursor::new(input);
             let result = module::Module::parse(input);
