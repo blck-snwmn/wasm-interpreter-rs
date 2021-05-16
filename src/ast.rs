@@ -1,37 +1,15 @@
-use crate::decode;
-use std::{
-    convert::TryFrom,
-    io::{Cursor, Seek, SeekFrom},
-};
-use thiserror::Error;
-
 mod instruction;
 mod module;
 mod parse;
 mod section;
 mod wasm_type;
 
-// uintN
-pub(crate) type uint8 = u8;
-pub(crate) type uint32 = u32;
-pub(crate) type uint64 = u64;
-
-// varintN
-pub(crate) type varuint1 = u8;
-pub(crate) type varuint7 = u8;
-pub(crate) type varuint32 = u32;
-
-// varuintN
-pub(crate) type varint7 = i8;
-pub(crate) type varint32 = i32;
-pub(crate) type varint64 = i64;
-
 #[cfg(test)]
 mod test {
 
-    use crate::ast::{section::SectionData, wasm_type::ValueType};
-
     use super::*;
+    use crate::ast::{section::SectionData, wasm_type::ValueType};
+    use std::io::{Cursor, Seek, SeekFrom};
     #[test]
     fn test_parse_module() {
         {
