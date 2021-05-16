@@ -82,7 +82,7 @@ mod test {
                     let rs = &f.return_types;
                     assert_eq!(rs.valu_types.len(), 1);
                     let r = rs.valu_types.get(0).unwrap();
-                    assert!(matches!(r, ValueType::Number(_)));
+                    assert!(matches!(r, ValueType::Number(NumberType::I32)));
                 }
             }
 
