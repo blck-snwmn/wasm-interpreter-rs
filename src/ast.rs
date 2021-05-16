@@ -187,11 +187,7 @@ pub struct ResultType {
 }
 impl ResultType {
     fn parse(data: &mut &[u8]) -> Result<Self> {
-        let num = u32::try_from(decode::decode_varint(data)?)?;
-        let mut v = Vec::new();
-        for _ in 0..num {
-            v.push(ValueType::parse(data)?);
-        }
+        let v = parse_vec(data, |data| ValueType::parse(data))?;
         Ok(Self { valu_types: v })
     }
 }
