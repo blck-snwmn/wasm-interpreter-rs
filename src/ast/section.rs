@@ -67,6 +67,7 @@ impl SectionData {
             3 => Ok(Self::Function(FunctionSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
+            7 => Ok(Self::Export),
             10 => Ok(Self::Code(CodeSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
@@ -98,7 +99,7 @@ impl FunctionSection {
     }
 }
 pub struct CodeSection {
-    codes: Vec<Code>,
+    pub(super) codes: Vec<Code>,
 }
 impl CodeSection {
     fn parse(data: &mut &[u8]) -> Result<Self> {
@@ -111,8 +112,8 @@ impl CodeSection {
     }
 }
 pub struct Code {
-    locals: Vec<wasm_type::ValueType>,
-    expression: instruction::Expression,
+    pub(super) locals: Vec<wasm_type::ValueType>,
+    pub(super) expression: instruction::Expression,
 }
 
 impl Code {

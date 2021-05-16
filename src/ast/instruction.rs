@@ -6,7 +6,7 @@ use super::{
 };
 use std::convert::TryFrom;
 pub struct Expression {
-    instrs: Vec<Instruction>,
+    pub(super) instrs: Vec<Instruction>,
 }
 
 impl Expression {
@@ -28,12 +28,14 @@ impl Expression {
 pub enum Instruction {
     Control(ControlInstruction),
     Numeric(NumericInstruction),
+    Variable(VariableInstruction),
 }
 
 impl Instruction {
     fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
         match by {
             0x00..=0x11 => Ok(Self::Control(ControlInstruction::Nop)),
+            0x20..=0x24 => Ok(Self::Variable(VariableInstruction::LocalGet)),
             0x41..=0xC4 => Ok(Self::Numeric(NumericInstruction::parse(data, by)?)),
             _ => Err(ParseError::UnexpectedByteValue {
                 title: "Instruction".to_string(),
@@ -76,14 +78,27 @@ impl ControlInstruction {
     }
 }
 
+pub enum VariableInstruction {
+    LocalGet,
+    LocalSet,
+    LocalTee,
+    GlobalGet,
+    GlobalSet,
+}
+impl VariableInstruction {}
+
 pub enum NumericInstruction {
     Const(ConstNumericInstruction),
+    Plain(PlainNumericInstruction),
+    SaturatingTruncation,
 }
 
 impl NumericInstruction {
     fn parse(data: &mut &[u8], by: u8) -> Result<Self> {
         match by {
             0x41..=0x44 => Ok(Self::Const(ConstNumericInstruction::parse(data, by)?)),
+            0x45..=0xC4 => Ok(Self::Plain(PlainNumericInstruction::AddI32)),
+            0xFC => Ok(Self::SaturatingTruncation),
             _ => Err(ParseError::UnexpectedByteValue {
                 title: "NumericInstruction".to_string(),
                 got: by,
@@ -129,4 +144,8 @@ impl ConstNumericInstruction {
             }),
         }
     }
+}
+
+pub enum PlainNumericInstruction {
+    AddI32,
 }
