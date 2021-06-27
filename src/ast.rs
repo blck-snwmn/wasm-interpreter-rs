@@ -1,8 +1,8 @@
-mod instruction;
-mod module;
-mod parse;
-mod section;
-mod wasm_type;
+pub mod instruction;
+pub mod module;
+pub mod parse;
+pub mod section;
+pub mod wasm_type;
 
 // TODO
 // parser 関数は公開しない。構造体は公開する（メソッドやフィールドは非公開がよさそう）

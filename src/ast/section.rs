@@ -78,7 +78,7 @@ impl SectionData {
 pub struct CustomSection {}
 
 pub struct TypeSection {
-    pub(super) funcs: Vec<FunctionType>,
+    pub funcs: Vec<FunctionType>,
 }
 impl TypeSection {
     fn parse(data: &mut &[u8]) -> Result<Self> {
@@ -87,7 +87,7 @@ impl TypeSection {
     }
 }
 pub struct FunctionSection {
-    pub(super) indexies: Vec<u32>,
+    pub indexies: Vec<u32>,
 }
 
 impl FunctionSection {
@@ -99,7 +99,7 @@ impl FunctionSection {
     }
 }
 pub struct CodeSection {
-    pub(super) codes: Vec<Code>,
+    pub codes: Vec<Code>,
 }
 impl CodeSection {
     fn parse(data: &mut &[u8]) -> Result<Self> {

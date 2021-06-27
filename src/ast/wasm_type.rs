@@ -9,6 +9,7 @@ pub enum Type {
     Reference(ReferenceType),
 }
 
+#[derive(Clone)]
 pub struct FunctionType {
     pub(super) params_types: ResultType,
     pub(super) return_types: ResultType,
@@ -30,6 +31,8 @@ impl FunctionType {
         })
     }
 }
+
+#[derive(Clone)]
 pub struct ResultType {
     pub(super) valu_types: Vec<ValueType>,
 }
@@ -40,6 +43,7 @@ impl ResultType {
     }
 }
 
+#[derive(Clone)]
 pub enum ValueType {
     Number(NumberType),
     Reference(ReferenceType),
@@ -59,6 +63,8 @@ impl ValueType {
         }
     }
 }
+
+#[derive(Clone)]
 pub enum NumberType {
     I32,
     I64,
@@ -76,6 +82,8 @@ impl NumberType {
         }
     }
 }
+
+#[derive(Clone)]
 pub enum ReferenceType {
     FunctionRef,
     ExternRef,

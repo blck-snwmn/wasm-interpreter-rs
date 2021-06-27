@@ -1,5 +1,7 @@
 mod ast;
 mod decode;
+mod evaluator;
+mod object;
 
 #[cfg(test)]
 mod tests {
