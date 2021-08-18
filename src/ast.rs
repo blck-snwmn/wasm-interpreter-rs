@@ -184,7 +184,15 @@ mod test {
                 assert_eq!(*fs.indexies.get(0).unwrap(), 0x00);
             }
             let elm = &result.sections.get(2).unwrap().payload_data;
-            assert!(matches!(elm, SectionData::Export));
+            assert!(matches!(elm, SectionData::Export(_)));
+
+            if let SectionData::Export(ty) = elm {
+                assert_eq!(ty.exports.len(), 1);
+                for f in &ty.exports {
+                    assert_eq!(String::from_utf8(f.name.clone()), Ok("add".to_string()));
+                    assert!(matches!(f.desc, section::ExportDesc::FuncIndex(0)));
+                }
+            }
 
             let elm = &result.sections.get(3).unwrap().payload_data;
             assert!(matches!(elm, SectionData::Code(_)));

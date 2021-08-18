@@ -48,7 +48,7 @@ pub enum SectionData {
     Table,
     Memory,
     Global,
-    Export,
+    Export(ExportSection),
     Start,
     Element,
     Code(CodeSection),
@@ -67,7 +67,9 @@ impl SectionData {
             3 => Ok(Self::Function(FunctionSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
-            7 => Ok(Self::Export),
+            7 => Ok(Self::Export(ExportSection::parse(
+                &mut payload_data.as_slice(),
+            )?)),
             10 => Ok(Self::Code(CodeSection::parse(
                 &mut payload_data.as_slice(),
             )?)),
@@ -122,4 +124,43 @@ impl Code {
         let expression = instruction::Expression::parse(data)?;
         Ok(Self { locals, expression })
     }
+}
+
+pub struct ExportSection {
+    pub(super) exports: Vec<Export>,
+}
+impl ExportSection {
+    fn parse(data: &mut &[u8]) -> Result<Self> {
+        let v = parse_vec(data, |data| Export::parse(data))?;
+        Ok(Self { exports: v })
+    }
+}
+pub struct Export {
+    pub(super) name: Vec<u8>,
+    pub(super) desc: ExportDesc,
+}
+
+impl Export {
+    fn parse(data: &mut &[u8]) -> Result<Self> {
+        let len = decode::decode_varint(data)?;
+        let name = decode::decode_len(data, len as usize)?;
+
+        let desc = match u8::try_from(decode::decode_varint(data)?)? {
+            0x00 => Ok(ExportDesc::FuncIndex(decode::decode_varint(data)? as u32)),
+            0x01 => Ok(ExportDesc::FuncIndex(decode::decode_varint(data)? as u32)),
+            0x02 => Ok(ExportDesc::FuncIndex(decode::decode_varint(data)? as u32)),
+            invalid => Err(ParseError::UnexpectedByteValue {
+                title: "exportdesc".to_string(),
+                got: invalid,
+            }),
+        }?;
+        Ok(Self { name, desc })
+    }
+}
+
+pub enum ExportDesc {
+    FuncIndex(u32),
+    TableIndex(u32),
+    MemIndex(u32),
+    GlobalIndex(u32),
 }
