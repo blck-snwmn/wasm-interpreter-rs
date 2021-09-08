@@ -1,8 +1,10 @@
+use super::value;
 use crate::ast::{self, module, section};
+
 pub struct FunctionInstance {
-    func_type: ast::wasm_type::FunctionType,
+    pub func_type: ast::wasm_type::FunctionType,
     // typeindex は type をすでに持っているのでなしでOK
-    code: ast::section::Code,
+    pub code: ast::section::Code,
 }
 
 impl FunctionInstance {
@@ -11,5 +13,16 @@ impl FunctionInstance {
             func_type: ft,
             code: c,
         }
+    }
+}
+
+pub struct ExportInstance {
+    name: String,
+    value: value::ExternVal,
+}
+
+impl ExportInstance {
+    pub fn new(name: String, value: value::ExternVal) -> Self {
+        Self { name, value }
     }
 }
