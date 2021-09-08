@@ -127,7 +127,7 @@ impl Code {
 }
 
 pub struct ExportSection {
-    pub(super) exports: Vec<Export>,
+    pub exports: Vec<Export>,
 }
 impl ExportSection {
     fn parse(data: &mut &[u8]) -> Result<Self> {
@@ -136,8 +136,8 @@ impl ExportSection {
     }
 }
 pub struct Export {
-    pub(super) name: Vec<u8>,
-    pub(super) desc: ExportDesc,
+    pub name: Vec<u8>,
+    pub desc: ExportDesc,
 }
 
 impl Export {

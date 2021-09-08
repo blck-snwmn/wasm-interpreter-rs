@@ -11,8 +11,8 @@ pub enum Type {
 
 #[derive(Clone)]
 pub struct FunctionType {
-    pub(super) params_types: ResultType,
-    pub(super) return_types: ResultType,
+    pub params_types: ResultType,
+    pub return_types: ResultType,
 }
 impl FunctionType {
     pub(super) fn parse(data: &mut &[u8]) -> Result<Self> {
